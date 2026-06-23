@@ -1,0 +1,25 @@
+{
+  "name": "roblox-ranking-cloud-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/imlog4n/roblox-ranking-cloud-api.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/imlog4n/roblox-ranking-cloud-api/issues"
+  },
+  "homepage": "https://github.com/imlog4n/roblox-ranking-cloud-api#readme",
+  "dependencies": {
+    "express": "^5.2.1",
+    "noblox.js": "^9.0.0"
+  }
+}
