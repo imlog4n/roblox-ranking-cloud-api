@@ -1,8 +1,14 @@
+require("dotenv").config();
+
 const express = require("express");
 const app = express();
 const noblox = require("noblox.js");
 
 app.use(express.json());
+
+app.get("/", (req, res) => {
+    res.sendStatus(200);
+})
 
 app.post("/setrank", authorize, async (req, res) => {
     const userId = req.body.UserId;
@@ -29,7 +35,7 @@ app.post("/promote", authorize, async (req, res) => {
         return res.sendStatus(400);
     }
 
-    const result = await setRank(userId, nextRole.id);
+    const result = await setRank(userId, rankerUserId, nextRole.id);
 
     res.sendStatus(result.res.ok ? 200 : 500);
 })
@@ -49,7 +55,7 @@ app.post("/demote", authorize, async (req, res) => {
         return res.sendStatus(400);
     }
 
-    const result = await setRank(userId, prevRole.id);
+    const result = await setRank(userId, rankerUserId, prevRole.id);
 
     res.sendStatus(result.res.ok ? 200 : 500);
 })
@@ -57,7 +63,6 @@ app.post("/demote", authorize, async (req, res) => {
 async function setRank(userId, rankerUserId, roleId) {
     const membershipUrl = `https://apis.roblox.com/cloud/v2/groups/${process.env.GROUP_ID}/memberships?filter=${encodeURIComponent(`user == 'users/${userId}'`)}`;
     const membershipRes = await fetch(membershipUrl, {
-        method: "GET",
         headers: {
             "x-api-key": process.env.CLOUD_API_KEY,
             "Content-Type": "application/json"
@@ -65,13 +70,13 @@ async function setRank(userId, rankerUserId, roleId) {
     })
     const membershipData = await membershipRes.json();
 
-    if (!(membershipRes.ok && membershipData.memberships && membershipData.memberships.length)) {
+    if (!membershipRes.ok || !membershipData.groupMemberships?.length) {
         console.error(membershipRes, membershipData);
 
         return { res: membershipRes, data: membershipData };
     }
 
-    const fullMembership = membershipData.memberships[0].path;
+    const fullMembership = membershipData.groupMemberships[0].path;
     const membershipId = fullMembership.split("/").pop();
     const url = `https://apis.roblox.com/cloud/v2/groups/${process.env.GROUP_ID}/memberships/${membershipId}`;
     const res = await fetch(url, {
@@ -88,7 +93,7 @@ async function setRank(userId, rankerUserId, roleId) {
         console.error(res, data);
     }
 
-    await logToDiscord(userId, rankerUserId, membershipData.memberships[0].role.id);
+    await logToDiscord(userId, rankerUserId, membershipData.groupMemberships[0].role.id);
 
     return { res, data };
 }
@@ -128,4 +133,4 @@ process.on("uncaughtException", console.error);
 
 app.listen(process.env.PORT || 3000, () => {
     console.log("Server is running on port " + (process.env.PORT || 3000));
-});
+})
